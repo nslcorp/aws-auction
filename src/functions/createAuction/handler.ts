@@ -1,13 +1,16 @@
-import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
-import { formatJSONResponse } from '@libs/api-gateway';
-import { middyfy } from '@libs/lambda';
+import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
+import { formatJSONResponse } from "@libs/api-gateway";
+import { middyfy } from "@libs/lambda";
 import { v4 as uuid } from "uuid";
-// import { DynamoDB } from "aws-sdk";
+import { DynamoDB } from "aws-sdk";
 
-import schema from './schema';
-// const dynamoDB = new DynamoDB.DocumentClient();
+import schema from "./schema";
+import * as process from "process";
+const dynamoDB = new DynamoDB.DocumentClient();
 
-const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
+const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
+  event
+) => {
   const { title } = event.body;
   const auction = {
     id: uuid(),
@@ -16,36 +19,26 @@ const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) =
     createdAt: new Date().toISOString(),
   };
 
-  console.log("auction", auction);
-  console.log("env", process.env);
+  try {
+    await dynamoDB
+      .put({
+        TableName: process.env.AUCTION_TABLE_NAME,
+        Item: auction,
+      })
+      .promise();
 
-  return formatJSONResponse({
-    message: `Hello ${event.body.name}, welcome to the exciting Serverless world!`,
-    auction,
-  });
-
-  // try {
-  //   const dynamoResponse = await dynamoDB
-  //       .put({
-  //         TableName: "AwsAuctionTable",
-  //         Item: auction,
-  //       })
-  //       .promise();
-  //
-  //   return {
-  //     statusCode: 200,
-  //     body: JSON.stringify({
-  //       env: process.env,
-  //       auction,
-  //     }),
-  //   };
-  // } catch (error) {
-  //   // console.error(error);
-  //   console.error(error.message);
-  // }
-
-
-
+    return formatJSONResponse({
+      message: `Success. ${title} was created.`,
+    });
+  } catch (error) {
+    console.error(error);
+    formatJSONResponse(
+      {
+        message: error.message,
+      },
+      400
+    );
+  }
 };
 
 export const main = middyfy(hello);
