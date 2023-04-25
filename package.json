@@ -4,7 +4,8 @@
   "description": "Serverless aws-nodejs-typescript template",
   "main": "serverless.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "serverless offline",
+    "deploy": "serverless offline --verbose"
   },
   "engines": {
     "node": ">=14.15.0"
@@ -14,8 +15,10 @@
     "@middy/http-error-handler": "^4.3.1",
     "@middy/http-event-normalizer": "^4.3.1",
     "@middy/http-json-body-parser": "^3.4.0",
+    "@types/http-errors": "^2.0.1",
     "aws-sdk": "^2.1362.0",
     "http-errors": "^2.0.0",
+    "ts-node-dev": "^2.0.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

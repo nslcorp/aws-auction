@@ -2,6 +2,8 @@ import type { AWS } from '@serverless/typescript';
 
 import createAuction from 'src/functions/createAuction';
 import getAuctions from 'src/functions/getAuctions';
+import getAuctionById from 'src/functions/getAuctionById';
+import placeBid from 'src/functions/placeBid';
 
 const serverlessConfiguration: AWS = {
   service: 'aws-auction',
@@ -28,6 +30,7 @@ const serverlessConfiguration: AWS = {
             Action: [
                 "dynamodb:PutItem",
                 "dynamodb:Scan",
+                "dynamodb:GetItem",
             ],
             Resource: "arn:aws:dynamodb:eu-central-1:663503730313:table/AwsAuctionTable"
           }
@@ -36,7 +39,7 @@ const serverlessConfiguration: AWS = {
     }
   },
   // import the function via paths
-  functions: { createAuction, getAuctions },
+  functions: { createAuction, getAuctions, getAuctionById, placeBid },
   package: { individually: true },
   custom: {
     AuctionTableName: 'AwsAuctionTable',

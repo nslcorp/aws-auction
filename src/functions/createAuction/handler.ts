@@ -3,9 +3,7 @@ import { formatJSONResponse } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { v4 as uuid } from "uuid";
 import { DynamoDB } from "aws-sdk";
-
 import schema from "./schema";
-import * as process from "process";
 const dynamoDB = new DynamoDB.DocumentClient();
 
 const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
@@ -17,6 +15,9 @@ const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     title,
     status: "OPEN",
     createdAt: new Date().toISOString(),
+    highestBid: {
+      amount: 0
+    }
   };
 
   try {
