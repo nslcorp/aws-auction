@@ -2,7 +2,7 @@
 export default {
   type: "object",
   properties: {
-    title: { type: 'string'}
+    title: { type: 'string', minimum: 0}
   },
   required: ['title'],
 } as const;

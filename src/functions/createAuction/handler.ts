@@ -10,11 +10,16 @@ const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
 ) => {
   const { title } = event.body;
+  const currentTime = new Date();
+  const endingAt = new Date();
+  endingAt.setHours(currentTime.getHours() + 3)
+
   const auction = {
     id: uuid(),
     title,
     status: "OPEN",
-    createdAt: new Date().toISOString(),
+    createdAt: currentTime.toISOString(),
+    endingAt: endingAt,
     highestBid: {
       amount: 0
     }

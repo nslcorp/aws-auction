@@ -1,25 +1,26 @@
-import type { AWS } from '@serverless/typescript';
+import type { AWS } from "@serverless/typescript";
 
-import createAuction from 'src/functions/createAuction';
-import getAuctions from 'src/functions/getAuctions';
-import getAuctionById from 'src/functions/getAuctionById';
-import placeBid from 'src/functions/placeBid';
+import createAuction from "src/functions/createAuction";
+import getAuctions from "src/functions/getAuctions";
+import getAuctionById from "src/functions/getAuctionById";
+import placeBid from "src/functions/placeBid";
+import processAuction from "src/functions/processAuction";
 
 const serverlessConfiguration: AWS = {
-  service: 'aws-auction',
-  frameworkVersion: '3',
-  plugins: ['serverless-esbuild', 'serverless-offline'],
+  service: "aws-auction",
+  frameworkVersion: "3",
+  plugins: ["serverless-esbuild", "serverless-offline"],
   provider: {
-    name: 'aws',
-    runtime: 'nodejs16.x',
+    name: "aws",
+    runtime: "nodejs16.x",
     region: "eu-central-1",
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
     },
     environment: {
-      AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
-      NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
+      NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
       AUCTION_TABLE_NAME: "${self:custom.AuctionTableName}",
     },
     iam: {
@@ -28,29 +29,37 @@ const serverlessConfiguration: AWS = {
           {
             Effect: "Allow",
             Action: [
-                "dynamodb:PutItem",
-                "dynamodb:Scan",
-                "dynamodb:GetItem",
+              "dynamodb:Scan",
+              "dynamodb:PutItem",
+              "dynamodb:GetItem",
+              "dynamodb:UpdateItem",
             ],
-            Resource: "arn:aws:dynamodb:eu-central-1:663503730313:table/AwsAuctionTable"
-          }
-        ]
-      }
-    }
+            Resource:
+              "arn:aws:dynamodb:eu-central-1:663503730313:table/AwsAuctionTable",
+          },
+        ],
+      },
+    },
   },
   // import the function via paths
-  functions: { createAuction, getAuctions, getAuctionById, placeBid },
+  functions: {
+    createAuction,
+    getAuctions,
+    getAuctionById,
+    placeBid,
+    processAuction,
+  },
   package: { individually: true },
   custom: {
-    AuctionTableName: 'AwsAuctionTable',
+    AuctionTableName: "AwsAuctionTable",
     esbuild: {
       bundle: true,
       minify: false,
       sourcemap: true,
-      exclude: ['aws-sdk'],
-      target: 'node14',
-      define: { 'require.resolve': undefined },
-      platform: 'node',
+      exclude: ["aws-sdk"],
+      target: "node14",
+      define: { "require.resolve": undefined },
+      platform: "node",
       concurrency: 10,
     },
   },
@@ -64,16 +73,14 @@ const serverlessConfiguration: AWS = {
           AttributeDefinitions: [
             {
               AttributeName: "id",
-              AttributeType: "S"
-            }
+              AttributeType: "S",
+            },
           ],
-          KeySchema: [
-            {AttributeName: "id", KeyType: "HASH"}
-          ]
-        }
-      }
-    }
-  }
+          KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
+        },
+      },
+    },
+  },
 };
 
 module.exports = serverlessConfiguration;
