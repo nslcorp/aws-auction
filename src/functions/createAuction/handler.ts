@@ -12,14 +12,14 @@ const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const { title } = event.body;
   const currentTime = new Date();
   const endingAt = new Date();
-  endingAt.setHours(currentTime.getHours() + 3)
+  endingAt.setHours(currentTime.getHours() - 1)
 
   const auction = {
     id: uuid(),
     title,
     status: "OPEN",
     createdAt: currentTime.toISOString(),
-    endingAt: endingAt,
+    endingAt: endingAt.toISOString(),
     highestBid: {
       amount: 0
     }
@@ -37,8 +37,7 @@ const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       message: `Success. ${title} was created.`,
     });
   } catch (error) {
-    console.error(error);
-    formatJSONResponse(
+    return formatJSONResponse(
       {
         message: error.message,
       },

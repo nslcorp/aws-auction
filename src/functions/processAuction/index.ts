@@ -5,6 +5,7 @@ export default {
   // events: [
   //   {
   //     // schedule: "rate(1 minute)",
+  //     // schedule: "chron",
   //   },
   // ],
 };

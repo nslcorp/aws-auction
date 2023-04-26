@@ -33,6 +33,7 @@ const serverlessConfiguration: AWS = {
               "dynamodb:PutItem",
               "dynamodb:GetItem",
               "dynamodb:UpdateItem",
+              "dynamodb:Query",
             ],
             Resource:
               "arn:aws:dynamodb:eu-central-1:663503730313:table/AwsAuctionTable",
@@ -75,8 +76,34 @@ const serverlessConfiguration: AWS = {
               AttributeName: "id",
               AttributeType: "S",
             },
+            {
+              AttributeName: "status",
+              AttributeType: "S",
+            },
+            {
+              AttributeName: "endingAt",
+              AttributeType: "S",
+            },
           ],
           KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
+          GlobalSecondaryIndexes: [
+            {
+              IndexName: 'statusAndEndDate',
+              KeySchema: [
+                {
+                  AttributeName: "status",
+                  KeyType: "HASH"
+                },
+                {
+                  AttributeName: "endingAt",
+                  KeyType: "RANGE"
+                }
+              ],
+              Projection: {
+                ProjectionType: "ALL"
+              }
+            }
+          ]
         },
       },
     },
