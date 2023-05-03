@@ -16,11 +16,16 @@ const placeBid: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const { id } = event.pathParameters;
   const { amount } = event.body;
 
+
   if (!amount) {
     return formatJSONResponse({ message: "Missing 'amount' parameter" }, 400);
   }
 
   const auction = await getAuctionById(id);
+
+  if(auction.status !== "OPEN"){
+    throw new createHttpError.Forbidden("[placeBid] you can place a bid only at status:OPEN auction")
+  }
 
   if (amount <= auction.highestBid.amount) {
     throw new createHttpError.Forbidden(

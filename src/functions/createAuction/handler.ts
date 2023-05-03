@@ -12,7 +12,7 @@ const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const { title } = event.body;
   const currentTime = new Date();
   const endingAt = new Date();
-  endingAt.setHours(currentTime.getHours() - 1)
+  endingAt.setHours(currentTime.getHours() + 2)
 
   const auction = {
     id: uuid(),

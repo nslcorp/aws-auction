@@ -35,8 +35,21 @@ const serverlessConfiguration: AWS = {
               "dynamodb:UpdateItem",
               "dynamodb:Query",
             ],
-            Resource:
-              "arn:aws:dynamodb:eu-central-1:663503730313:table/AwsAuctionTable",
+            Resource: [
+              "${self:custom.AuctionTable.Arn}",
+              {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "${self:custom.AuctionTable.Arn}",
+                    "index",
+                    "statusAndEndDate",
+                  ],
+                ],
+              },
+              // "arn:aws:dynamodb:eu-central-1:663503730313:table/AwsAuctionTable/index/statusAndEndDate"
+            ],
+            // "arn:aws:dynamodb:eu-central-1:663503730313:table/AwsAuctionTable",
           },
         ],
       },
@@ -53,6 +66,10 @@ const serverlessConfiguration: AWS = {
   package: { individually: true },
   custom: {
     AuctionTableName: "AwsAuctionTable",
+    AuctionTable: {
+      Name: "AwsAuctionTable",
+      Arn: { "Fn::GetAtt": ["AwsAuctionTable", "Arn"] },
+    },
     esbuild: {
       bundle: true,
       minify: false,
@@ -88,22 +105,22 @@ const serverlessConfiguration: AWS = {
           KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
           GlobalSecondaryIndexes: [
             {
-              IndexName: 'statusAndEndDate',
+              IndexName: "statusAndEndDate",
               KeySchema: [
                 {
                   AttributeName: "status",
-                  KeyType: "HASH"
+                  KeyType: "HASH",
                 },
                 {
                   AttributeName: "endingAt",
-                  KeyType: "RANGE"
-                }
+                  KeyType: "RANGE",
+                },
               ],
               Projection: {
-                ProjectionType: "ALL"
-              }
-            }
-          ]
+                ProjectionType: "ALL",
+              },
+            },
+          ],
         },
       },
     },
