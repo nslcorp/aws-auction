@@ -7,6 +7,8 @@ import { DynamoDB } from "aws-sdk";
 import schema from "./schema";
 import { getAuctionById } from "@functions/getAuctionById/helpers/getAuctionById";
 import * as createHttpError from "http-errors";
+import validator from "@middy/validator";
+import { transpileSchema } from "@middy/validator/transpile";
 
 const dynamoDB = new DynamoDB.DocumentClient();
 
@@ -16,15 +18,16 @@ const placeBid: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const { id } = event.pathParameters;
   const { amount } = event.body;
 
-
   if (!amount) {
     return formatJSONResponse({ message: "Missing 'amount' parameter" }, 400);
   }
 
   const auction = await getAuctionById(id);
 
-  if(auction.status !== "OPEN"){
-    throw new createHttpError.Forbidden("[placeBid] you can place a bid only at status:OPEN auction")
+  if (auction.status !== "OPEN") {
+    throw new createHttpError.Forbidden(
+      "[placeBid] you can place a bid only at status:OPEN auction"
+    );
   }
 
   if (amount <= auction.highestBid.amount) {
@@ -56,4 +59,6 @@ const placeBid: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 };
 
-export const main = middyfy(placeBid);
+export const main = middyfy(placeBid).use(
+  validator({ eventSchema: transpileSchema(schema) })
+);

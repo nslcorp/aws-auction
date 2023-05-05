@@ -6,8 +6,7 @@ export default {
     {
       http: {
         method: 'get',
-        path: '/auction',
-
+        path: '/auction'
       },
     },
   ],

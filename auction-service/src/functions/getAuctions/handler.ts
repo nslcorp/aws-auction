@@ -1,12 +1,20 @@
-import {formatJSONResponse, ValidatedEventAPIGatewayProxyEvent} from "@libs/api-gateway";
+import {
+  formatJSONResponse,
+  ValidatedEventAPIGatewayProxyEvent,
+} from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { DynamoDB } from "aws-sdk";
 import * as createHttpError from "http-errors";
+import validator from "@middy/validator";
+import { transpileSchema } from "@middy/validator/transpile";
+
 import schema from "./schema";
 
 const dynamoDB = new DynamoDB.DocumentClient();
 
-const getAuctions: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
+const getAuctions: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
+  event
+) => {
   const { status } = event.queryStringParameters;
 
   console.log(status);
@@ -33,4 +41,6 @@ const getAuctions: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (ev
   return formatJSONResponse(response.Items);
 };
 
-export const main = middyfy(getAuctions);
+export const main = middyfy(getAuctions).use(
+  validator({ eventSchema: transpileSchema(schema) })
+);

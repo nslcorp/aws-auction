@@ -8,6 +8,7 @@ export default {
       http: {
         method: 'post',
         path: '/auction',
+        authorizer: "${self:custom.Authorizer}",
         request: {
           schemas: {
             'application/json': schema,

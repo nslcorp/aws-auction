@@ -15,6 +15,7 @@
     "@middy/http-error-handler": "^4.3.1",
     "@middy/http-event-normalizer": "^4.3.1",
     "@middy/http-json-body-parser": "^3.4.0",
+    "@middy/validator": "^4.4.0",
     "@types/http-errors": "^2.0.1",
     "aws-sdk": "^2.1362.0",
     "http-errors": "^2.0.0",

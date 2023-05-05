@@ -1,10 +1,10 @@
 import type { AWS } from "@serverless/typescript";
 
-import createAuction from "src/functions/createAuction";
-import getAuctions from "src/functions/getAuctions";
-import getAuctionById from "src/functions/getAuctionById";
-import placeBid from "src/functions/placeBid";
-import processAuction from "src/functions/processAuction";
+import createAuction from "@functions/createAuction";
+import getAuctions from "@functions/getAuctions";
+import getAuctionById from "@functions/getAuctionById";
+import placeBid from "@functions/placeBid";
+import processAuction from "@functions/processAuction";
 
 const serverlessConfiguration: AWS = {
   service: "aws-auction",
@@ -65,6 +65,7 @@ const serverlessConfiguration: AWS = {
   },
   package: { individually: true },
   custom: {
+    Authorizer: "arn:aws:lambda:${aws:region}:${aws:accountId}:function:auction-auth-service-dev-auth",
     AuctionTableName: "AwsAuctionTable",
     AuctionTable: {
       Name: "AwsAuctionTable",
