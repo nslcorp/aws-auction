@@ -1,5 +1,4 @@
 import { DynamoDB } from "aws-sdk";
-import * as createError from "http-errors";
 import { Auction } from "@src/types";
 import * as createHttpError from "http-errors";
 const dynamoDB = new DynamoDB.DocumentClient();
@@ -18,14 +17,14 @@ export const getAuctionById = async (id: string): Promise<Auction> => {
 
     return response.Item as Auction;
   } catch (error) {
-    if (createError.isHttpError(error)) {
+    if (createHttpError.isHttpError(error)) {
       throw error;
     }
     if (error.message) {
-      throw new createError.BadRequest(error.message);
+      throw new createHttpError.BadRequest(error.message);
     }
     console.error(error);
 
-    throw new createError.InternalServerError();
+    throw new createHttpError.InternalServerError();
   }
 };

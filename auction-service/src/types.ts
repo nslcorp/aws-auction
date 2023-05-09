@@ -11,5 +11,7 @@ export interface Auction {
   createdAt: string;
   highestBid: {
     amount: number;
+    bidder: string
   };
+  seller: string;
 }

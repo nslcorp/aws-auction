@@ -14,6 +14,9 @@ const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const endingAt = new Date();
   endingAt.setHours(currentTime.getHours() + 2)
 
+  const {email} = event.requestContext.authorizer;
+
+
   const auction = {
     id: uuid(),
     title,
@@ -22,7 +25,8 @@ const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     endingAt: endingAt.toISOString(),
     highestBid: {
       amount: 0
-    }
+    },
+    seller: email
   };
 
   try {

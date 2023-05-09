@@ -17,6 +17,7 @@ const placeBid: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 ) => {
   const { id } = event.pathParameters;
   const { amount } = event.body;
+  const { email } = event.requestContext.authorizer;
 
   if (!amount) {
     return formatJSONResponse({ message: "Missing 'amount' parameter" }, 400);
@@ -25,8 +26,19 @@ const placeBid: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const auction = await getAuctionById(id);
 
   if (auction.status !== "OPEN") {
+    throw new createHttpError.Forbidden("[placeBid] you can place a bid only at status:OPEN auction"
+    );
+  }
+
+  if (auction.seller === email) {
     throw new createHttpError.Forbidden(
-      "[placeBid] you can place a bid only at status:OPEN auction"
+      "[placeBid] you can not bid your own auction."
+    );
+  }
+
+  if (auction.highestBid.bidder === email) {
+    throw new createHttpError.Forbidden(
+        "[placeBid] you are already the highest bidder."
     );
   }
 
@@ -42,8 +54,9 @@ const placeBid: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       .update({
         TableName: process.env.AUCTION_TABLE_NAME,
         Key: { id },
-        UpdateExpression: "set highestBid.amount = :amount",
-        ExpressionAttributeValues: { ":amount": amount },
+        UpdateExpression:
+          "set highestBid.amount = :amount, highestBid.bidder = :bidder",
+        ExpressionAttributeValues: { ":amount": amount, ":bidder": email },
         ReturnValues: "ALL_NEW",
       })
       .promise();
