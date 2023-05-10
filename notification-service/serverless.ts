@@ -25,6 +25,12 @@ const serverlessConfiguration: AWS = {
             Effect: 'Allow',
             Action: 'ses:SendEmail',
             Resource: 'arn:aws:ses:*'
+          },
+          {
+            Effect: 'Allow',
+            Action: ['sqs:ReceiveMessage'],
+            // Resource: '!GetAtt MailQueue.Arn',
+            Resource: "${self:custom.MailQueueArn}"
           }
         ]
       }
@@ -34,6 +40,7 @@ const serverlessConfiguration: AWS = {
   functions: { sendEmail },
   package: { individually: true },
   custom: {
+    MailQueueArn: {"Fn::GetAtt": ['MailQueue', 'Arn']},
     esbuild: {
       bundle: true,
       minify: false,
@@ -45,6 +52,16 @@ const serverlessConfiguration: AWS = {
       concurrency: 10,
     },
   },
+  resources: {
+    Resources: {
+      MailQueue: {
+        Type: "AWS::SQS::Queue",
+        Properties: {
+          QueueName: 'MailQueue'
+        }
+      }
+    }
+  }
 };
 
 module.exports = serverlessConfiguration;

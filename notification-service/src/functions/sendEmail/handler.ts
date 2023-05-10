@@ -1,22 +1,24 @@
 import { SES } from "aws-sdk";
 
-const simpleEmailService = new SES({ region: "eu-central-1" });
+const simpleEmailService: SES = new SES({ region: "eu-central-1" });
 
 const sendEmail = async (event: any) => {
-  console.log(event);
+  const {subjectText, bodyText, recipients} = JSON.parse(event.Records[0].body);
+  console.log('event.Records', event.Records)
+
   const params = {
     Source: "sender_adress@email.com", //who is the sender (previously validated by AWS)
     Destination: {
-      ToAddresses: ["reepient1@email.com", '"reepient2@email.com"'],
+      ToAddresses: recipients,
     },
     Message: {
       Body: {
         Text: {
-          Data: "Hello from Serhii!",
+          Data: bodyText
         },
       },
       Subject: {
-        Data: "@AWS-Auction: test Mail message",
+        Data: subjectText
       }
     },
   };
