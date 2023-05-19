@@ -5,9 +5,10 @@ import getAuctions from "@functions/getAuctions";
 import getAuctionById from "@functions/getAuctionById";
 import placeBid from "@functions/placeBid";
 import processAuction from "@functions/processAuction";
+import uploadAuctionPicture from "@functions/uploadAuctionPicture";
 
 const serverlessConfiguration: AWS = {
-  service: "aws-auction",
+  service: "auction-core-service",
   frameworkVersion: "3",
   plugins: ["serverless-esbuild", "serverless-offline"],
   provider: {
@@ -22,10 +23,17 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
       AUCTION_TABLE_NAME: "${self:custom.AuctionTableName}",
+      MAIL_QUEUE_URL: "${self:custom.MailQueueUrl}",
+      AUCTION_BUCKET_NAME: "${self:custom.AuctionBucketName}",
     },
     iam: {
       role: {
         statements: [
+          {
+            Effect: "Allow",
+            Action: "sqs:SendMessage",
+            Resource: "${self:custom.MailQueueArn}",
+          },
           {
             Effect: "Allow",
             Action: [
@@ -47,9 +55,12 @@ const serverlessConfiguration: AWS = {
                   ],
                 ],
               },
-              // "arn:aws:dynamodb:eu-central-1:663503730313:table/AwsAuctionTable/index/statusAndEndDate"
             ],
-            // "arn:aws:dynamodb:eu-central-1:663503730313:table/AwsAuctionTable",
+          },
+          {
+            Effect: "Allow",
+            Action: ["s3:PutObject"],
+            Resource: "arn:aws:s3:::${self:custom.AuctionBucketName}/*",
           },
         ],
       },
@@ -62,15 +73,20 @@ const serverlessConfiguration: AWS = {
     getAuctionById,
     placeBid,
     processAuction,
+    uploadAuctionPicture,
   },
   package: { individually: true },
   custom: {
-    Authorizer: "arn:aws:lambda:${aws:region}:${aws:accountId}:function:auction-auth-service-dev-auth",
+    Authorizer:
+      "arn:aws:lambda:${aws:region}:${aws:accountId}:function:auction-auth-service-dev-auth",
     AuctionTableName: "AwsAuctionTable",
     AuctionTable: {
       Name: "AwsAuctionTable",
       Arn: { "Fn::GetAtt": ["AwsAuctionTable", "Arn"] },
     },
+    MailQueueArn: "${cf:auction-notification-service-dev.MailQueueArn}",
+    MailQueueUrl: "${cf:auction-notification-service-dev.MailQueueUrl}",
+    AuctionBucketName: "auction-bucket-aserm4jfiv4ut",
     esbuild: {
       bundle: true,
       minify: false,
@@ -81,8 +97,8 @@ const serverlessConfiguration: AWS = {
       platform: "node",
       concurrency: 10,
     },
-    'serverless-offline': {
-       ignoreJWTSignature: true
+    "serverless-offline": {
+      ignoreJWTSignature: true,
     },
   },
   resources: {
@@ -127,6 +143,39 @@ const serverlessConfiguration: AWS = {
           ],
         },
       },
+      AuctionBucket: {
+        Type: "AWS::S3::Bucket",
+        Properties: {
+          BucketName: "${self:custom.AuctionBucketName}",
+          LifecycleConfiguration: {
+            Rules: [
+              {
+                Id: "ExpirePictures_example_id",
+                Status: "Enabled",
+                ExpirationInDays: 1,
+              },
+            ],
+          },
+        },
+      },
+      //API: s3:PutBucketPolicy Access Denied
+      // AuctionBucketPolicy: {
+      //   Type: "AWS::S3::BucketPolicy",
+      //   Properties: {
+      //     Bucket: { Ref: "AuctionBucket" },
+      //     PolicyDocument: {
+      //       Statement: [
+      //         {
+      //           Sid: "ModifyBucketPolicy",
+      //           Effect: "Allow",
+      //           Principal: "*",
+      //           Action: ["s3:GetObject"],
+      //           Resource: "arn:aws:s3:::${self:custom.AuctionBucketName}/*",
+      //         },
+      //       ],
+      //     },
+      //   },
+      // },
     },
   },
 };

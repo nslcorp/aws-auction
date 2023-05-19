@@ -1,6 +1,7 @@
 declare namespace NodeJS {
   export interface ProcessEnv {
     AUCTION_TABLE_NAME: string;
+    AUCTION_BUCKET_NAME: string;
   }
 }
 
@@ -11,7 +12,13 @@ export interface Auction {
   createdAt: string;
   highestBid: {
     amount: number;
-    bidder: string
+    bidder: string;
   };
   seller: string;
+}
+
+export interface MessageQueueRecord {
+  subjectText: string;
+  bodyText: string;
+  recipients: string[];
 }
